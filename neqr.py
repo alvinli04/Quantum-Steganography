@@ -1,3 +1,5 @@
+import qiskit
+
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit import execute
 from qiskit import Aer
@@ -28,7 +30,7 @@ def convert_to_bits (picture):
         for j in range(n):
             value = picture[i][j]
             bitstring = bin(value)[2:]
-            ret.append([False for i in range(8 - len(bitstring))] + [True if c=='1' else False for c in bitstring])
+            ret.append([0 for i in range(8 - len(bitstring))] + [1 if c=='1' else 0 for c in bitstring])
     return ret
 
 
@@ -41,13 +43,11 @@ return
 ----------------
 A quantum circuit containing the NEQR representation of the image
 '''
-def quantum_sub_procedure(bitStr): 
-    newBitStr = []
-    for item in bitStr:
-        if item:
-            newBitStr.append(1)
-        else:
-            newBitStr.append(0)
+def neqr(bitStr): 
+    newBitStr = bitStr
+
+    #print(newBitStr)
+    #print("\n")
 
     # Pixel position
     idx = QuantumRegister(2, 'idx')
@@ -65,7 +65,7 @@ def quantum_sub_procedure(bitStr):
     numOfQubits = quantumImage.num_qubits
 
     quantumImage.draw()
-    print("Number of Qubits: {numOfQubits}")
+    print("Number of Qubits:", numOfQubits)
 
     # -----------------------------------
     # Drawing the Quantum Circuit
@@ -76,23 +76,31 @@ def quantum_sub_procedure(bitStr):
     quantumImage.i([intensity[lengthIntensity-1-i] for i in range(lengthIntensity)])
     quantumImage.h([idx[lengthIdx-1-i] for i in range(lengthIdx)])
 
-    quantumImage.barrier()
+    numOfPixels = len(newBitStr)
 
-    numOfBits = 4; 
+    for i in range(numOfPixels):
+        # X-gate (enabling zero-controlled nature)
+        if i==2: quantumImage.x(idx[0])
+        if i==1: quantumImage.x(idx[1])
 
-    for i in range(numOfQubits):
-        if i==0 or i==1 : quantumImage.x(idx[i])
+        # Configuring CCNOT (ccx) gates with control and target qubits
+        for j in range(len(newBitStr[i])):
+            if newBitStr[i][j] == 1:
+                quantumImage.ccx(idx[0], idx[1], intensity[lengthIntensity-1-j])
+        
+        # X-gate (enabling zero-controlled nature)
+        if i==2: quantumImage.x(idx[0])
+        if i==1: quantumImage.x(idx[1])
+        quantumImage.barrier()
 
-        if newBitStr[i] == 1:
-            quantumImage.ccx(idx[0], idx[1], intensity[i])
+    #quantumImage.measure(range(10), range(10))
 
-
-    quantumImage.x([idx[lengthIdx-1-i] for i in range(lengthIdx)])
-
-    quantumImage.barrier()
-    # quantumImage.measure(range(10), range(10))
-    quantumImage.draw()
     return quantumImage
 
 if __name__ == '__main__':
     print('hello')
+    arr = convert_to_bits(test_picture_2x2)
+    print(arr, "\n")
+    print(neqr(arr))
+
+    
