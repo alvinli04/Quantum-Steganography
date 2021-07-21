@@ -6,6 +6,7 @@ from qiskit import Aer
 from qiskit import IBMQ
 from qiskit.compiler import transpile
 from time import perf_counter
+from qiskit.tools.visualization import plot_histogram
 
 import numpy as np
 
@@ -94,6 +95,11 @@ def neqr(bitStr):
         quantumImage.barrier()
 
     #quantumImage.measure(range(10), range(10))
+
+    #backend = Aer.get_backend('qasm_simulator')
+    #job = execute(quantumImage, backend, shots=1024) # shots default = 1024
+    #result = job.result()
+    #print(result.get_counts()) 
 
     return quantumImage
 
