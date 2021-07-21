@@ -1,13 +1,15 @@
-import unittest
+import neqr
+import qiskit
+import random
 
-class TestStringMethods(unittest.TestCase):
+def test1(): 
+    array2x2 = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
+    print(array2x2)
+    bits_arr = neqr.convert_to_bits(array2x2)
+    print(bits_arr)
 
-    def test_classical_preprocessing(self, actualPxlVal, pixelBitValue):
-        bitVal = "{0:b}".format(int(actualPxlVal))
-        self.assertEqual(pixelBitValue, bitVal, 'message = "First and second values are NOT equal!"')
+def main():
+    test1()
 
 if __name__ == '__main__':
-    unittest.main()
-
-
-
+    main()
