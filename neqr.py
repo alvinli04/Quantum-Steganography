@@ -12,8 +12,6 @@ import numpy as np
 
 
 
-test_picture_2x2 = [[0, 100], [200, 255]]
-
 '''
 params
 ---------------
@@ -81,8 +79,12 @@ def neqr(bitStr):
 
     for i in range(numOfPixels):
         # X-gate (enabling zero-controlled nature)
-        if i==2: quantumImage.x(idx[0])
-        if i==1: quantumImage.x(idx[1])
+        if i==2: 
+            quantumImage.x(idx[0])
+        if i==1: 
+            quantumImage.x(idx[1])
+        if i==0:
+            quantumImage.x(idx)
 
         # Configuring CCNOT (ccx) gates with control and target qubits
         for j in range(len(newBitStr[i])):
@@ -90,8 +92,12 @@ def neqr(bitStr):
                 quantumImage.ccx(idx[0], idx[1], intensity[lengthIntensity-1-j])
         
         # X-gate (enabling zero-controlled nature)
-        if i==2: quantumImage.x(idx[0])
-        if i==1: quantumImage.x(idx[1])
+        if i==2: 
+            quantumImage.x(idx[0])
+        if i==1: 
+            quantumImage.x(idx[1])
+        if i==0:
+            quantumImage.x(idx)
         quantumImage.barrier()
 
     #quantumImage.measure(range(10), range(10))
@@ -104,7 +110,7 @@ def neqr(bitStr):
     return quantumImage
 
 if __name__ == '__main__':
-    print('hello')
+    test_picture_2x2 = [[0, 100], [200, 255]]
     arr = convert_to_bits(test_picture_2x2)
     print(arr, "\n")
     print(neqr(arr))
