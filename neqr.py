@@ -108,5 +108,3 @@ if __name__ == '__main__':
     arr = convert_to_bits(test_picture_2x2)
     print(arr, "\n")
     print(neqr(arr))
-
-    
