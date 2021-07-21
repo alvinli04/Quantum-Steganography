@@ -12,8 +12,6 @@ import numpy as np
 
 
 
-test_picture_2x2 = [[0, 100], [200, 255]]
-
 '''
 params
 ---------------
@@ -112,6 +110,7 @@ def neqr(bitStr):
     return quantumImage
 
 if __name__ == '__main__':
+    test_picture_2x2 = [[0, 100], [200, 255]]
     arr = convert_to_bits(test_picture_2x2)
     print(arr, "\n")
     print(neqr(arr))
