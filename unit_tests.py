@@ -17,6 +17,7 @@ def neqr_test():
     array2x2 = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
     print('2x2 array:')
     print(array2x2)
+    print(neqr.convert_to_bits(array2x2))
 
     flattened_array = neqr.convert_to_bits(array2x2)
     result_circuit = neqr.neqr(flattened_array)
@@ -27,10 +28,11 @@ def neqr_test():
     statevec = job_result.get_statevector(result_circuit)
     for i in range(len(statevec)):
         if statevec[i] != 0:
-            print(f"{format(i, '02b')}: {statevec[i].real}")
+            print(f"{format(i, '010b')}: {statevec[i].real}")
 
 def main():
     convert_to_bits_test()
+    neqr_test()
 
 if __name__ == '__main__':
     main()
