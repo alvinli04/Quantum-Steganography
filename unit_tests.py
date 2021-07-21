@@ -7,6 +7,9 @@ from qiskit.compiler import transpile
 import neqr
 import random
 
+'''
+NEQR Unit Tests
+'''
 def convert_to_bits_test(): 
     array2x2 = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
     print(array2x2)
@@ -29,6 +32,21 @@ def neqr_test():
     for i in range(len(statevec)):
         if statevec[i] != 0:
             print(f"{format(i, '010b')}: {statevec[i].real}")
+
+############################################################################################################################
+
+'''
+Steganography Unit Tests
+'''
+def comparator_test():
+
+
+def coordinate_comparator_test():
+
+
+def difference_test():
+
+
 
 def main():
     convert_to_bits_test()

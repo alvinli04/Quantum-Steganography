@@ -11,7 +11,6 @@ from qiskit.tools.visualization import plot_histogram
 import numpy as np
 
 
-
 '''
 params
 ---------------
