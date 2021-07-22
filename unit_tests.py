@@ -7,6 +7,11 @@ from qiskit.compiler import transpile
 import neqr
 import random
 import steganography
+
+
+def arraynxn(n):
+    return [[random.randint(0,255) for i in range(n)] for j in range(n)]
+
 '''
 NEQR Unit Tests
 '''
@@ -17,12 +22,14 @@ def convert_to_bits_test():
     print(bits_arr)
 
 def neqr_test():
-    array2x2 = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
-    print('2x2 array:')
-    print(array2x2)
-    print(neqr.convert_to_bits(array2x2))
+    testarr = arraynxn(4)
+    print('test array:')
+    print(testarr)
 
-    flattened_array = neqr.convert_to_bits(array2x2)
+    flattened_array = neqr.convert_to_bits(testarr)
+
+    print([''.join([str(b) for i,b in enumerate(a)]) for a in flattened_array])
+
     result_circuit = neqr.neqr(flattened_array)
 
     backend = Aer.get_backend('statevector_simulator')
@@ -31,7 +38,8 @@ def neqr_test():
     statevec = job_result.get_statevector(result_circuit)
     for i in range(len(statevec)):
         if statevec[i] != 0:
-            print(f"{format(i, '010b')}: {statevec[i].real}")
+            print(f"{format(i, '012b')}: {statevec[i].real}")
+    print(result_circuit)
 
 ############################################################################################################################
 
@@ -75,7 +83,7 @@ def difference_test():
 
 
 def main():
-    comparator_test()
+    neqr_test()
 
 if __name__ == '__main__':
     main()

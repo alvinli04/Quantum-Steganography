@@ -10,6 +10,7 @@ from qiskit.tools.visualization import plot_histogram
 import numpy as np
 import neqr
 import random
+import math
 
 '''
 params
