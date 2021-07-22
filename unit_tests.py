@@ -67,14 +67,14 @@ def comparator_test():
     
 
 
-#def coordinate_comparator_test():
+def coordinate_comparator_test():
+    pass
+
+def difference_test():
+    pass
 
 
-#def difference_test():
-
-
-
-#def main():
+def main():
     comparator_test()
 
 if __name__ == '__main__':
