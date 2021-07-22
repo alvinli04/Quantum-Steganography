@@ -25,7 +25,7 @@ If c1c0 = 01, then Y < X.
 If c1c0 = 10, then Y > X
 '''
 def comparator_test(Y, X):
-
+    pass
 
 
 '''
@@ -38,8 +38,24 @@ return
 ---------------
 A single qubit |r> which is |1> when YX = AB and |0> otherwise
 '''
-def coordinate_comparator_test(YX, AB):
-
+def coordinate_comparator(circuit, YX, AB):
+    n = YX.size
+    result = QuantumRegister(1, 'result')
+    circuit.add_register(result)
+    
+    for i in range(n):
+        circuit.x(YX[i])
+        circuit.cx(YX[i], AB[i])
+        circuit.x(YX[i])
+        
+    circuit.mcx(AB, result)
+    
+    for i in range(n):
+        circuit.x(YX[i])
+        circuit.cx(YX[i], AB[i])
+        circuit.x(YX[i])
+    
+    return circuit
 
 
 '''
@@ -53,3 +69,4 @@ return
 A quantum register |D> which holds the positive difference of Y and X.
 '''
 def difference_test(Y, X):
+    pass
