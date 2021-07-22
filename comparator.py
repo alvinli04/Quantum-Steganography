@@ -18,6 +18,7 @@ def comparator(regX, regY):
         qc.x(regY[index])
         qc.mcx([regY[index], regX[index]]+[ancilla[i] for i in range(2*index)], [ancilla[index*2+1]])
     return qc
+    
 if __name__ == '__main__':
     regX = QuantumRegister(2, "x")
     regY = QuantumRegister(2, "y")
