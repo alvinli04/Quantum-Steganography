@@ -24,33 +24,28 @@ def compare (register, c):
         print("continuing")
     return c
     
-
-def comparator(dregX, dregY): 
-    qc = QuantumCircuit(dregX, dregY)
-    # dregX and dregY should have the same size 
-    dregLength = dregX.size() 
+def comparator(regX, regY): 
+    qc = QuantumCircuit(regX, regY)
+    # regX and regY should have the same size 
+    regLength = regX.size 
     ancilla = AncillaRegister(2)
-    c = QuantumRegister(2)
-    for index in range(dregLength): 
-        qc.x(dregY[index])
-        qc.ccx(dregY[index], dregX[index], ancilla[0])
-        c = compare(ancilla, c)
-        if c[0] != c[1]: 
-            return c
-        qc.x(dregY[index])
-        qc.x(dregX[index])
-        qc.ccx(dregY[index], dregX[index], ancilla[1])
-        c = compare(ancilla, c)
-        if c[0] != c[1]: 
-            return c
+    qc.add_register(ancilla)
 
-    return c
+    for index in range(regLength): 
+        qc.x(regY[index])
+        #qc.ccx(regY[index], regX[index], ancilla[0])
+        print("anc: ", ancilla, "\n")
+        qc.x(regY[index])
+        qc.x(regX[index])
+        #qc.ccx(regY[index], regX[index], ancilla[1])
+    return ancilla
 
 if __name__ == '__main__':
     regX = QuantumRegister(2)
     regY = QuantumRegister(2)
     cResult = comparator(regX, regY)
     print("Comparator Register Output")
-    print("c0: ", cResult[0], "c1: ", cResult[1], "\n")
+    #print("c0: ", cResult[0], "c1: ", cResult[1], "\n")
+
         
 
