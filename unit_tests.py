@@ -67,6 +67,7 @@ def comparator_test():
 
 
 def coordinate_comparator_test():
+<<<<<<< HEAD
     regXY = QuantumRegister(2, "reg1")
     regAB = QuantumRegister(2, "reg2")
     circuit = QuantumCircuit(regXY, regAB)
@@ -84,13 +85,23 @@ def coordinate_comparator_test():
         if statevec[state] != 0:
             #note: output is in little endian
             print(f"{format(state, '05b')}: {statevec[state].real}")
+=======
+    pass
 
-#def difference_test():
+def difference_test():
+    pass
+>>>>>>> b003b6b776bd5a7f33fac926288f51bf402c6236
 
+
+<<<<<<< HEAD
 
 
 def main():
     coordinate_comparator_test()
+=======
+def main():
+    comparator_test()
+>>>>>>> b003b6b776bd5a7f33fac926288f51bf402c6236
 
 if __name__ == '__main__':
     main()
