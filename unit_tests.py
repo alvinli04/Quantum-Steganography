@@ -6,7 +6,7 @@ from qiskit.compiler import transpile
 
 import neqr
 import random
-
+import steganography
 '''
 NEQR Unit Tests
 '''
@@ -39,18 +39,43 @@ def neqr_test():
 Steganography Unit Tests
 '''
 def comparator_test():
+    #creating registers and adding them to circuit 
+    regX = QuantumRegister(4, "Register X")
+    regY = QuantumRegister(4, "Register Y")
+    circuit = QuantumCircuit(regX, regY)
+
+    #changing registers to make them different 
+    circuit.x(regX[1])
+    circuit.x(regX[3])
+    circuit.x(regY[0])
+    circuit.x(regY[2])
+    
+    #comparator returns the circuit
+    resultCircuit = comparator(regY, regX, circuit)
+    #result --> ancillas from function
+    resultCircuit.measure(result)
+
+    #measuring
+    backend = Aer.get_backend('comparator_simulator')
+    simulation = execute(resultCircuit, backend=backend, shots=1, memory=True)
+    simResult = simulation.result()
+    statevec = simResult.get_statevector(result_circuit)
+    for state in range(len(statevec)):
+        big_endian_state = state[::-1]
+        print(big_endian_state) 
+
+    
 
 
-def coordinate_comparator_test():
+#def coordinate_comparator_test():
 
 
-def difference_test():
+#def difference_test():
 
 
 
-def main():
-    convert_to_bits_test()
-    neqr_test()
+#def main():
+    comparator_test()
 
 if __name__ == '__main__':
     main()
