@@ -12,6 +12,7 @@ from qiskit.circuit.library import SXdgGate
 import numpy as np
 import neqr
 import random
+import math
 
 '''
 params
@@ -40,8 +41,24 @@ return
 ---------------
 A single qubit |r> which is |1> when YX = AB and |0> otherwise
 '''
-def coordinate_comparator_test(YX, AB):
-    pass
+def coordinate_comparator(circuit, YX, AB):
+    n = YX.size
+    result = QuantumRegister(1, 'result')
+    circuit.add_register(result)
+    
+    for i in range(n):
+        circuit.x(YX[i])
+        circuit.cx(YX[i], AB[i])
+        circuit.x(YX[i])
+        
+    circuit.mcx(AB, result)
+    
+    for i in range(n):
+        circuit.x(YX[i])
+        circuit.cx(YX[i], AB[i])
+        circuit.x(YX[i])
+    
+    return circuit
 
 
 '''
