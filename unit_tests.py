@@ -51,31 +51,46 @@ def comparator_test():
     circuit.x(regY[2])
     
     #comparator returns the circuit
-    resultCircuit = comparator(regY, regX, circuit)
+    resultCircuit = steganography.comparator(regY, regX, circuit)
     #result --> ancillas from function
     resultCircuit.measure(result)
 
     #measuring
-    backend = Aer.get_backend('comparator_simulator')
+    backend = Aer.get_backend('statevector_simulator')
     simulation = execute(resultCircuit, backend=backend, shots=1, memory=True)
     simResult = simulation.result()
-    statevec = simResult.get_statevector(result_circuit)
+    statevec = simResult.get_statevector(resultCircuit)
     for state in range(len(statevec)):
-        big_endian_state = state[::-1]
-        print(big_endian_state) 
+        print(f"{format(state, '010b')}: {statevec[state].real}")
 
     
 
 
-#def coordinate_comparator_test():
-
+def coordinate_comparator_test():
+    regXY = QuantumRegister(2, "reg1")
+    regAB = QuantumRegister(2, "reg2")
+    circuit = QuantumCircuit(regXY, regAB)
+    #uncomment this to make the registers different
+    #regXY is in |00> and regAB in |01>
+    #circuit.x(regAB[1])
+    #circuit.x(regXY[1])
+    resultCircuit = steganography.coordinate_comparator(circuit, regXY, regAB)
+    print(resultCircuit.draw())
+    backend = Aer.get_backend('statevector_simulator')
+    simulation = execute(resultCircuit, backend=backend, shots=1, memory=True)
+    simResult = simulation.result()
+    statevec = simResult.get_statevector(resultCircuit)
+    for state in range(len(statevec)):
+        if statevec[state] != 0:
+            #note: output is in little endian
+            print(f"{format(state, '05b')}: {statevec[state].real}")
 
 #def difference_test():
 
 
 
-#def main():
-    comparator_test()
+def main():
+    coordinate_comparator_test()
 
 if __name__ == '__main__':
     main()
