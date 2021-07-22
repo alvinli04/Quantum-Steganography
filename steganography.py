@@ -69,5 +69,5 @@ return
 ---------------
 A quantum register |D> which holds the positive difference of Y and X.
 '''
-def difference_test(Y, X):
+def difference(Y, X):
     pass
