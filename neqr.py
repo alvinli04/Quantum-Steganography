@@ -113,4 +113,11 @@ if __name__ == '__main__':
     test_picture_2x2 = [[0, 100], [200, 255]]
     arr = convert_to_bits(test_picture_2x2)
     print(arr, "\n")
-    print(neqr(arr))
+    qc_image = neqr(arr)
+
+    # Circuit Analysis 
+    #print('Circuit dimensions')
+    #print('Circuit depth: ', qc_image.decompose().depth())
+    #print('Circuit size: ', qc_image.decompose().size())
+    #print(qc_image.decompose().count_ops())
+    print(qc_image)
