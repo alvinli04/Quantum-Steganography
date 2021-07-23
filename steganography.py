@@ -185,3 +185,25 @@ def get_secret_image(k, binary_images):
                 secret_image[j][l] += str(binary_images[i][j][l])
     return secret_image
 
+
+'''
+params
+--------------------
+secret_image: a quantum circuit containing the secret image
+
+returns
+--------------------
+the inverted version of secret_image (basically a classical not operator)
+'''
+def invert(secret_image):
+    for i in range(secret_image.num_qubits):
+        secret_image.x(i)
+
+
+'''
+params
+------------------
+cover_image: the quantum cover image
+secret_image: the quantum secret image
+
+'''
