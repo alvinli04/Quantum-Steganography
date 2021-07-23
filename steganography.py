@@ -225,6 +225,7 @@ def invert(secret_image, intensity):
 '''
 params
 ------------------
+circuit: the quantum circuit containing all the images
 cover_image: the quantum cover image
 secret_image: the quantum secret image
 image_size: size of the image
@@ -233,6 +234,11 @@ return
 ------------------
 key: the quantum key
 '''
-def get_key(cover_image, secret_image, image_size):
-    key = QuantumCircuit(image_size)
+def get_key(circuit, cover_image, secret_image, image_size):
+    result = QuantumRegister(1, 'result')
+    idx = QuantumRegister(math.ceil(math.log2(image_size)))
+    key = QuantumCircuit(intensity, idx)
+
+    key.h(idx)
+    
 
