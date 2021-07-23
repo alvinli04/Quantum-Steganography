@@ -66,37 +66,35 @@ params
 ---------------
 Y: a quantum register
 X: a quantum register
+difference: an empty quantum register the same size as X and Y
 
 return
 ---------------
 A quantum register |D> which holds the positive difference of Y and X.
 '''
-def difference(circuit, Y, X):
+def difference(circuit, Y, X, difference):
     # PART 1: 
     # reversible parallel subtractor
     
     # initialize registers to store sign, difference, and junk qubits
     regLength = X.size
     sign = QuantumRegister(1, 'sign')
-    difference = QuantumRegister(regLength, 'difference')
     ancilla = QuantumRegister(regLength - 1, 'junk')
     circuit.add_register(ancilla)
-    circuit.add_register(difference)
     circuit.add_register(sign)
 
-    # perform half subtractor for first qubit
-    rev_half_subtractor(circuit, X[0], Y[0], sign[0], ancilla[0])
+    # perform half subtractor for last qubit
+    rev_half_subtractor(circuit, X[-1], Y[-1], difference[-1], ancilla[-1])
     
     # perform full subtrator for rest of qubits
-    for i in range(1, regLength - 1): 
-        rev_full_subtractor(circuit, X[i], Y[i], ancilla[i-1], difference[i-1], ancilla[i])
-    rev_full_subtractor(circuit, X[-1], Y[-1], ancilla[-1], difference[-2], difference[-1])
+    for i in range(regLength - 2, 0, -1): 
+        rev_full_subtractor(circuit, X[i], Y[i], ancilla[i], difference[i], ancilla[i-1])
+    rev_full_subtractor(circuit, X[0], Y[0], ancilla[0], difference[0], sign[0])
     
     # swap X and difference registers to fix result 
     # this is just sort of a thing you have to do
-    circuit.swap(sign, X[0])
-    for i in range(1, regLength): 
-        circuit.swap(difference[i-1], X[i])
+    for i in range(regLength - 1, -1, -1): 
+        circuit.swap(difference[i], X[i])
     
     # PART 2: 
     # complementary operation
@@ -110,7 +108,6 @@ def difference(circuit, Y, X):
     for i in range(regLength):
         circuit.mcx([sign[0]] + difference[i+1:], difference[i])
     
-    return circuit
 
 
 
