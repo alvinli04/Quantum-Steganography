@@ -94,10 +94,15 @@ def coordinate_comparator_test():
             print(f"{format(state, '05b')}: {statevec[state].real}")
 
 def difference_test():
-    regY = QuantumRegister(4, "reg1")
-    regX = QuantumRegister(4, "reg2")
+    regY = QuantumRegister(4, "regY")
+    regX = QuantumRegister(4, "regX")
     circuit = QuantumCircuit(regY, regX)
-    resultCircuit = steganography.difference(regY, regX)
+
+    #circuit.x(regY)
+    #circuit.x(regX)
+    circuit.barrier()
+
+    resultCircuit = steganography.difference(circuit, regY, regX)
     print(resultCircuit.draw())
     backend = Aer.get_backend('statevector_simulator')
     simulation = execute(resultCircuit, backend=backend, shots=1, memory=True)
@@ -111,7 +116,7 @@ def difference_test():
 
 
 def main():
-    coordinate_comparator_test()
+    difference_test()
 
 if __name__ == '__main__':
     main()

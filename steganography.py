@@ -80,7 +80,9 @@ def difference(circuit, Y, X):
     sign = QuantumRegister(1, 'sign')
     difference = QuantumRegister(regLength, 'difference')
     ancilla = QuantumRegister(regLength - 1, 'junk')
-    circuit.add_register(ancilla, difference)
+    circuit.add_register(ancilla)
+    circuit.add_register(difference)
+    circuit.add_register(sign)
 
     # perform half subtractor for first qubit
     rev_half_subtractor(circuit, X[0], Y[0], sign[0], ancilla[0])
@@ -104,8 +106,9 @@ def difference(circuit, Y, X):
         circuit.cx(sign[0], difference[i])
     
     # flip the difference again, but based on sign and remaining bits (pt 2)
+    #for i in range(regLength-1, -1, -1):
     for i in range(regLength):
-        circuit.mcx([sign[0] + difference[i+1:]], difference[i])
+        circuit.mcx([sign[0]] + difference[i+1:], difference[i])
     
     return circuit
 
