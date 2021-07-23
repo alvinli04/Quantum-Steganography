@@ -96,23 +96,25 @@ def coordinate_comparator_test():
 def difference_test():
     regY = QuantumRegister(4, "regY")
     regX = QuantumRegister(4, "regX")
-    circuit = QuantumCircuit(regY, regX)
-
-    #circuit.x(regY)
-    #circuit.x(regX)
+    difference = QuantumRegister(4, 'difference')
+    cr = ClassicalRegister(4, 'measurement')
+    circuit = QuantumCircuit(regY, regX, difference, cr)
+    
     circuit.barrier()
 
-    resultCircuit = steganography.difference(circuit, regY, regX)
-    print(resultCircuit.draw())
-    backend = Aer.get_backend('statevector_simulator')
-    simulation = execute(resultCircuit, backend=backend, shots=1, memory=True)
-    simResult = simulation.result()
-    statevec = simResult.get_statevector(resultCircuit)
-    for state in range(len(statevec)):
-        if statevec[state] != 0:
-            #note: output is in little endian
-            #only have to look at first bit 
-            print(f"{format(state, '05b')}: {statevec[state].real}")
+    steganography.difference(circuit, regY, regX, difference)
+    #print(circuit.draw())
+
+    circuit.measure(difference, cr)
+
+    simulator = Aer.get_backend('aer_simulator')
+    simulation = execute(circuit, simulator, shots=1)
+    result = simulation.result()
+    counts = result.get_counts(circuit)
+
+    for(state, count) in counts.items():
+        big_endian_state = state[::-1]
+        print(big_endian_state)
 
 
 def get_secret_image_test():
