@@ -115,8 +115,15 @@ def difference_test():
             print(f"{format(state, '05b')}: {statevec[state].real}")
 
 
+def get_secret_image_test():
+    test_arr = [[[random.randint(0,1) for i in range(4)] for j in range(4)] for k in range(5)]
+    test_result = steganography.get_secret_image(5, test_arr)
+    for a in test_arr:
+        print(a)
+    print(f'result:\n {test_result}')
+
 def main():
-    difference_test()
+    get_secret_image_test()
 
 if __name__ == '__main__':
     main()
