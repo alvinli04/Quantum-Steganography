@@ -83,7 +83,7 @@ def coordinate_comparator(circuit, YX, AB):
         circuit.cx(YX[i], AB[i])
         circuit.x(YX[i])
     
-    return circuit
+    return (circuit,result)
 
 
 '''
@@ -236,3 +236,18 @@ key: the quantum key
 def get_key(cover_image, secret_image, image_size):
     key = QuantumCircuit(image_size)
 
+def embed():
+    #part 1:
+
+    #part 2: 
+    array = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
+    print(array)
+    bits_arr = neqr.convert_to_bits(array)
+    print(bits_arr)
+    
+    _, cover_image_values = neqr.neqr(bits_array)
+    _, secret_image_values = neqr.neqr(bits_array)
+    circuit = QuantumCircuit(cover_image_values, secret_image_values)
+    circuit.add_register(result)
+    #assume coordinate comparator has been executed in part one, returning result 
+    
