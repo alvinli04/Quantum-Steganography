@@ -9,8 +9,7 @@ from time import perf_counter
 from qiskit.tools.visualization import plot_histogram
 
 import numpy as np
-
-
+import math
 
 '''
 params
@@ -49,7 +48,7 @@ def neqr(bitStr):
     #print("\n")
 
     # Pixel position
-    idx = QuantumRegister(2, 'idx')
+    idx = QuantumRegister(math.ceil(math.log2(len(newBitStr))), 'idx')
 
     # Pixel intensity values
     intensity = QuantumRegister(8, 'intensity')
@@ -78,26 +77,25 @@ def neqr(bitStr):
     numOfPixels = len(newBitStr)
 
     for i in range(numOfPixels):
+        bin_ind = bin(i)[2:]
+        bin_ind = (lengthIdx - len(bin_ind)) * '0' + bin_ind
+        bin_ind = bin_ind[::-1]
+
         # X-gate (enabling zero-controlled nature)
-        if i==2: 
-            quantumImage.x(idx[0])
-        if i==1: 
-            quantumImage.x(idx[1])
-        if i==0:
-            quantumImage.x(idx)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                quantumImage.x(idx[j])
 
         # Configuring CCNOT (ccx) gates with control and target qubits
         for j in range(len(newBitStr[i])):
             if newBitStr[i][j] == 1:
-                quantumImage.ccx(idx[0], idx[1], intensity[lengthIntensity-1-j])
+                quantumImage.mcx(idx, intensity[lengthIntensity-1-j])
         
         # X-gate (enabling zero-controlled nature)
-        if i==2: 
-            quantumImage.x(idx[0])
-        if i==1: 
-            quantumImage.x(idx[1])
-        if i==0:
-            quantumImage.x(idx)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                quantumImage.x(idx[j])
+
         quantumImage.barrier()
 
     #quantumImage.measure(range(10), range(10))
