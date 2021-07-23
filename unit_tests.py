@@ -1,4 +1,4 @@
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, AncillaRegister
 from qiskit import execute
 from qiskit import Aer
 from qiskit import IBMQ
@@ -48,30 +48,35 @@ Steganography Unit Tests
 '''
 def comparator_test():
     #creating registers and adding them to circuit 
-    regX = QuantumRegister(4, "Register X")
-    regY = QuantumRegister(4, "Register Y")
+    regX = QuantumRegister(4)
+    regY = QuantumRegister(4)
     circuit = QuantumCircuit(regX, regY)
+    cr = ClassicalRegister(2)
 
     #changing registers to make them different 
-    circuit.x(regX[1])
-    circuit.x(regX[3])
-    circuit.x(regY[0])
-    circuit.x(regY[2])
+    circuit.x(regX[0])
+    circuit.x(regX[2])
+    circuit.x(regY[1])
+    circuit.x(regY[3])
+
+    result = QuantumRegister(2, 'result')
+    circuit.add_register(result)
+
+    circuit.add_register(cr)
     
     #comparator returns the circuit
-    resultCircuit = steganography.comparator(regY, regX, circuit)
+    resultCircuit, _ = steganography.comparator(regY, regX, circuit, result)
     #result --> ancillas from function
-    resultCircuit.measure(result)
+    resultCircuit.measure(result, cr)
 
     #measuring
-    backend = Aer.get_backend('statevector_simulator')
-    simulation = execute(resultCircuit, backend=backend, shots=1, memory=True)
+    simulator = Aer.get_backend('aer_simulator')
+    simulation = execute(resultCircuit, simulator, shots=1, memory=True)
     simResult = simulation.result()
-    statevec = simResult.get_statevector(resultCircuit)
-    for state in range(len(statevec)):
-        print(f"{format(state, '010b')}: {statevec[state].real}")
-
-    
+    counts = simResult.get_counts(resultCircuit)
+    for(state, count) in counts.items():
+        big_endian_state = state[::-1]
+        return big_endian_state   
 
 
 def coordinate_comparator_test():
@@ -153,6 +158,8 @@ def invert_test():
 
 def main():
     invert_test()
+    print("\n Comparator Test: ", comparator_test(), "\n")
+    #coordinate_comparator_test()
 
 if __name__ == '__main__':
     main()

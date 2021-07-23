@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import qiskit
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit import execute
@@ -210,4 +211,4 @@ key: the quantum key
 '''
 def get_key(cover_image, secret_image, image_size):
     key = QuantumCircuit(image_size)
-    
+
