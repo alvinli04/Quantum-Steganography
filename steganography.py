@@ -205,8 +205,12 @@ params
 ------------------
 cover_image: the quantum cover image
 secret_image: the quantum secret image
+image_size: size of the image
 
 return
 ------------------
-
+key: the quantum key
 '''
+def get_key(cover_image, secret_image, image_size):
+    key = QuantumCircuit(image_size)
+    
