@@ -105,7 +105,7 @@ def neqr(bitStr):
     #result = job.result()
     #print(result.get_counts()) 
 
-    return quantumImage
+    return (quantumImage, intensity)
 
 if __name__ == '__main__':
     test_picture_2x2 = [[0, 100], [200, 255]]

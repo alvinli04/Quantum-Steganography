@@ -212,14 +212,14 @@ def get_secret_image(k, binary_images):
 params
 --------------------
 secret_image: a quantum circuit containing the secret image
+intensity: a quantum register in secret_image that contains the intensity
 
 returns
 --------------------
 nothing
 '''
-def invert(secret_image):
-    for i in range(secret_image.num_qubits):
-        secret_image.x(i)
+def invert(secret_image, intensity):
+    secret_image.x(intensity)
 
 
 '''

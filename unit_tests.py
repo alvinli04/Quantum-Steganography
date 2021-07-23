@@ -131,19 +131,10 @@ def get_secret_image_test():
 
 
 def invert_test():
-    qr = QuantumRegister(4)
-    test_circuit = QuantumCircuit(qr)
-
-    bin_num = ''
-    for i in range(4):
-        k = random.randint(0,1)
-        if k == 1:
-            test_circuit.x(qr[i])
-            bin_num += '1'
-        else:
-            bin_num += '0'
-    print(bin_num)
-    steganography.invert(test_circuit)
+    test_arr = arraynxn(4)
+    print(neqr.convert_to_bits(test_arr))
+    test_circuit, intensity = neqr.neqr(neqr.convert_to_bits(test_arr))
+    steganography.invert(test_circuit, intensity)
 
     backend = Aer.get_backend('statevector_simulator')
     simulation = execute(test_circuit, backend=backend, shots=1, memory=True)
@@ -153,12 +144,12 @@ def invert_test():
         if statevec[state] != 0:
             #note: output is in little endian
             #only have to look at first bit 
-            print(f"{format(state, '04b')}: {statevec[state].real}")
+            print(f"{format(state, '012b')}: {statevec[state].real}")
 
 
 def main():
     invert_test()
-    print("\n Comparator Test: ", comparator_test(), "\n")
+    #print("\n Comparator Test: ", comparator_test(), "\n")
     #coordinate_comparator_test()
 
 if __name__ == '__main__':
