@@ -79,7 +79,6 @@ def coordinate_comparator(circuit, YX, AB):
     
     return circuit
 
-
 '''
 params
 ---------------
