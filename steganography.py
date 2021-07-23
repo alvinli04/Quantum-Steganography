@@ -7,6 +7,7 @@ from qiskit.compiler import transpile
 from time import perf_counter
 from qiskit.tools.visualization import plot_histogram
 from qiskit.circuit.library import SXdgGate
+from qiskit.circuit.quantumregister import AncillaRegister
 
 
 import numpy as np
@@ -17,8 +18,10 @@ import math
 '''
 params
 ---------------
-Y: a quantum register
-X: a quantum register
+regY: a quantum register
+regX: a quantum register
+circuit: the circuit that contains all the register
+result: an empty register that will hold results
 
 return
 ---------------
@@ -27,8 +30,30 @@ If c1c0 = 00, then Y = X.
 If c1c0 = 01, then Y < X.
 If c1c0 = 10, then Y > X
 '''
-def comparator_test(Y, X):
-    pass
+def comparator(regY, regX, circuit, result): 
+    # regX and regY should have the same size 
+    regLength = regX.size 
+    ancilla = AncillaRegister(2*regLength)
+    circuit.add_register(ancilla)
+
+    circuit.x(ancilla)
+    for index in range(regLength):
+        circuit.x(regX[index])
+        circuit.mcx([regY[index], regX[index]]+[ancilla[i] for i in range(2*index)], [ancilla[index*2]])
+        if index < regLength-1: 
+            circuit.mcx([regY[index], regX[index]]+[ancilla[i] for i in range(2*index)], [ancilla[2*regLength-2]])
+        circuit.x(regX[index])
+        circuit.x(regY[index])
+        circuit.mcx([regY[index], regX[index]]+[ancilla[i] for i in range(2*index)], [ancilla[index*2+1]])
+        if index < regLength-1: 
+            circuit.mcx([regY[index], regX[index]]+[ancilla[i] for i in range(2*index)], [ancilla[2*regLength-1]])
+        circuit.x(regY[index])     
+    circuit.x(ancilla)
+
+    circuit.cx(ancilla[2*regLength-2], result[0])
+    circuit.cx(ancilla[2*regLength-1], result[1])
+
+    return (circuit, result)
 
 
 '''
