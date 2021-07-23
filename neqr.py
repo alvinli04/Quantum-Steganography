@@ -48,13 +48,13 @@ def neqr(bitStr):
     #print("\n")
 
     # Pixel position
-    idx = QuantumRegister(math.ceil(math.log2(len(newBitStr))), 'idx')
+    idx = QuantumRegister(math.ceil(math.log2(len(newBitStr))))
 
     # Pixel intensity values
-    intensity = QuantumRegister(8, 'intensity')
+    intensity = QuantumRegister(8)
 
     # Classical Register
-    creg = ClassicalRegister(10, 'creg')
+    creg = ClassicalRegister(10)
 
     # Quantum Image Representation as a quantum circuit
     # with Pixel Position and Intensity registers
@@ -105,7 +105,7 @@ def neqr(bitStr):
     #result = job.result()
     #print(result.get_counts()) 
 
-    return (quantumImage, intensity)
+    return (quantumImage, intensity, idx)
 
 if __name__ == '__main__':
     test_picture_2x2 = [[0, 100], [200, 255]]

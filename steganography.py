@@ -67,8 +67,9 @@ return
 A single qubit |r> which is |1> when YX = AB and |0> otherwise
 '''
 def coordinate_comparator(circuit, YX, AB):
+    assert len(YX) == len(AB)
     n = YX.size
-    result = QuantumRegister(1, 'result')
+    result = QuantumRegister(1)
     circuit.add_register(result)
     
     for i in range(n):
@@ -83,7 +84,7 @@ def coordinate_comparator(circuit, YX, AB):
         circuit.cx(YX[i], AB[i])
         circuit.x(YX[i])
     
-    return (circuit,result)
+    return (circuit, result)
 
 
 '''
@@ -103,8 +104,8 @@ def difference(circuit, Y, X, difference):
     
     # initialize registers to store sign, difference, and junk qubits
     regLength = X.size
-    sign = QuantumRegister(1, 'sign')
-    ancilla = QuantumRegister(regLength - 1, 'junk')
+    sign = QuantumRegister(1)
+    ancilla = QuantumRegister(regLength - 1)
     circuit.add_register(ancilla)
     circuit.add_register(sign)
 
@@ -218,7 +219,10 @@ returns
 --------------------
 nothing
 '''
-def invert(secret_image, intensity):
+def invert(secret_image, intensity, inverse):
+    secret_image.x(intensity)
+    for i in range(len(intensity)):
+        secret_image.cx(intensity[i], inverse[i])
     secret_image.x(intensity)
 
 
@@ -226,34 +230,46 @@ def invert(secret_image, intensity):
 params
 ------------------
 circuit: the quantum circuit containing all the images
+key_idx, key_result: registers of key
 cover_image: the quantum cover image
 secret_image: the quantum secret image
-image_size: size of the image
 
 return
 ------------------
 key: the quantum key
 '''
-def get_key(circuit, cover_image, secret_image, image_size):
-    result = QuantumRegister(1, 'result')
-    idx = QuantumRegister(math.ceil(math.log2(image_size)))
-    key = QuantumCircuit(intensity, idx)
+def get_key(circuit, key_idx, key_result, cover_image_idx, cover_image_intensity, secret_image_idx, secret_image_intensity, invsii, diff1, diff2, image_size):
+    circuit.h(key_idx)
+    _, coord_result1 = coordinate_comparator(circuit, key_idx, cover_image_idx)
+    _, coord_result2 = coordinate_comparator(circuit, key_idx, secret_image_idx)
+    coord_result = QuantumRegister(1)
+    circuit.add_register(coord_result)
 
-    key.h(idx)
-    
+    circuit.ccx(coord_result1, coord_result2, coord_result)
 
-def embed():
-    #part 1:
+    difference(circuit, cover_image_intensity, secret_image_intensity, diff1)
+    difference(circuit, cover_image_intensity, invsii, diff2)
 
-    #part 2: 
-    array = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
-    print(array)
-    bits_arr = neqr.convert_to_bits(array)
-    print(bits_arr)
-    
-    _, cover_image_values = neqr.neqr(bits_array)
-    _, secret_image_values = neqr.neqr(bits_array)
-    circuit = QuantumCircuit(cover_image_values, secret_image_values)
-    circuit.add_register(result)
-    #assume coordinate comparator has been executed in part one, returning result 
-    
+    comp_result = QuantumRegister(2)
+    circuit.add_register(comp_result)
+
+    comparator(diff1, diff2, circuit, comp_result)
+
+    circuit.x(comp_result[1])
+
+    for i in range(image_size):
+        bin_ind = bin(i)[2:]
+        bin_ind = (len(key_idx) - len(bin_ind)) * '0' + bin_ind
+        bin_ind = bin_ind[::-1]
+
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(key_idx[j])
+
+        circuit.mcx(key_idx[:] + coord_result[:] + comp_result[:], key_result)
+
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(key_idx[j])
