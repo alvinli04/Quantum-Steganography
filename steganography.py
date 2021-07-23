@@ -156,3 +156,54 @@ def rev_full_subtractor(circuit, A, B, C, Q, Borrow):
     circuit.csx(C, Borrow)
     circuit.csx(A, Borrow)
     circuit.barrier()
+
+
+'''
+Embedding Procedure
+'''
+
+'''
+params
+------------------
+k: the number of binary images
+binary_images: a list of 2^n by 2^n binary images to construct the secret image
+assume they are all the same size
+
+return
+-------------------
+the secret image
+'''
+def get_secret_image(k, binary_images):
+    n = len(binary_images[0][0])
+    secret_image = [['' for i in range(n)] for j in range(n)]
+    for i in range(k):
+        for j in range(n):
+            for l in range(n):
+                secret_image[j][l] += str(binary_images[i][j][l])
+    return secret_image
+
+
+'''
+params
+--------------------
+secret_image: a quantum circuit containing the secret image
+
+returns
+--------------------
+nothing
+'''
+def invert(secret_image):
+    for i in range(secret_image.num_qubits):
+        secret_image.x(i)
+
+
+'''
+params
+------------------
+cover_image: the quantum cover image
+secret_image: the quantum secret image
+
+return
+------------------
+
+'''
