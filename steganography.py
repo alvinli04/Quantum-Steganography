@@ -233,4 +233,4 @@ return
 key: the quantum key
 '''
 def get_key(circuit, key_idx, key_result, cover_idx, cover_intensity, secret_idx, secret_intensity, inv_secret_intensity, diff1, diff2, image_size):
-    
+    pass

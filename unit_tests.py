@@ -32,7 +32,7 @@ def neqr_test():
 
     idx = QuantumRegister(4)
     intensity = QuantumRegister(8)
-    result_circuit = QuantumCircuit(idx, intensity)
+    result_circuit = QuantumCircuit(intensity, idx)
     neqr.neqr(flattened_array, result_circuit, idx, intensity)
 
     backend = Aer.get_backend('statevector_simulator')
@@ -62,40 +62,41 @@ def comparator_test():
     circuit.x(regY[1])
     circuit.x(regY[3])
 
-    result = QuantumRegister(2, 'result')
+    result = QuantumRegister(2)
     circuit.add_register(result)
 
     circuit.add_register(cr)
     
     #comparator returns the circuit
-    resultCircuit, _ = steganography.comparator(regY, regX, circuit, result)
+    steganography.comparator(regY, regX, circuit, result)
     #result --> ancillas from function
-    resultCircuit.measure(result, cr)
+    circuit.measure(result, cr)
 
     #measuring
     simulator = Aer.get_backend('aer_simulator')
-    simulation = execute(resultCircuit, simulator, shots=1, memory=True)
+    simulation = execute(circuit, simulator, shots=1, memory=True)
     simResult = simulation.result()
-    counts = simResult.get_counts(resultCircuit)
+    counts = simResult.get_counts(circuit)
     for(state, count) in counts.items():
         big_endian_state = state[::-1]
-        return big_endian_state   
+        print(big_endian_state)   
 
 
 def coordinate_comparator_test():
-    regXY = QuantumRegister(2, "reg1")
-    regAB = QuantumRegister(2, "reg2")
-    circuit = QuantumCircuit(regXY, regAB)
+    regXY = QuantumRegister(2)
+    regAB = QuantumRegister(2)
+    result = QuantumRegister(1)
+    circuit = QuantumCircuit(regXY, regAB, result)
     #uncomment this to make the registers different
     #regXY is in |00> and regAB in |01>
     #circuit.x(regAB[1])
     #circuit.x(regXY[1])
-    resultCircuit = steganography.coordinate_comparator(circuit, regXY, regAB)
-    print(resultCircuit.draw())
+    steganography.coordinate_comparator(circuit, result, regXY, regAB)
+    print(circuit)
     backend = Aer.get_backend('statevector_simulator')
-    simulation = execute(resultCircuit, backend=backend, shots=1, memory=True)
+    simulation = execute(circuit, backend=backend, shots=1, memory=True)
     simResult = simulation.result()
-    statevec = simResult.get_statevector(resultCircuit)
+    statevec = simResult.get_statevector(circuit)
     for state in range(len(statevec)):
         if statevec[state] != 0:
             #note: output is in little endian
@@ -136,13 +137,19 @@ def get_secret_image_test():
 def invert_test():
     test_arr = arraynxn(4)
     print(neqr.convert_to_bits(test_arr))
-    test_circuit, intensity = neqr.neqr(neqr.convert_to_bits(test_arr))
-    steganography.invert(test_circuit, intensity)
+
+    idx = QuantumRegister(4)
+    intensity = QuantumRegister(8)
+    inverse = QuantumRegister(8)
+    circuit = QuantumCircuit(inverse, intensity, idx)
+
+    neqr.neqr(neqr.convert_to_bits(test_arr), circuit, idx, intensity)
+    steganography.invert(circuit, intensity, inverse)
 
     backend = Aer.get_backend('statevector_simulator')
-    simulation = execute(test_circuit, backend=backend, shots=1, memory=True)
+    simulation = execute(circuit, backend=backend, shots=1, memory=True)
     simResult = simulation.result()
-    statevec = simResult.get_statevector(test_circuit)
+    statevec = simResult.get_statevector(circuit)
     for state in range(len(statevec)):
         if statevec[state] != 0:
             #note: output is in little endian
@@ -182,11 +189,11 @@ def get_key_test():
         if statevec[state] != 0:
             #note: output is in little endian
             #only have to look at first bit 
-            print(f"{format(state, '012b')}: {statevec[state].real}")
+            print(f"{format(state, '020b')}: {statevec[state].real}")
 
 
 def main():
-    neqr_test()
+    invert_test()
 
 if __name__ == '__main__':
     main()
