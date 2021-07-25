@@ -30,7 +30,10 @@ def neqr_test():
 
     print([''.join([str(b) for i,b in enumerate(a)]) for a in flattened_array])
 
-    result_circuit = neqr.neqr(flattened_array)
+    idx = QuantumRegister(4)
+    intensity = QuantumRegister(8)
+    result_circuit = QuantumCircuit(idx, intensity)
+    neqr.neqr(flattened_array, result_circuit, idx, intensity)
 
     backend = Aer.get_backend('statevector_simulator')
     job = execute(result_circuit, backend=backend, shots=1, memory=True)
@@ -150,10 +153,10 @@ def invert_test():
 def get_key_test():
     test_cover = arraynxn(2)
     test_secret = arraynxn(2)
-    print(f'cover:\n {test_cover} \n secret:\n {test_secret}')
+    #print(f'cover:\n {test_cover} \n secret:\n {test_secret}')
     sz = 4
-    (cover, cover_intensity, cover_idx) = neqr.neqr(test_cover)
-    (secret, secret_intensity, secret_idx) = neqr.neqr(test_secret)
+    (cover, cover_intensity, cover_idx) = neqr.neqr(neqr.convert_to_bits(test_cover))
+    (secret, secret_intensity, secret_idx) = neqr.neqr(neqr.convert_to_bits(test_secret))
 
     key_idx, key_result = QuantumRegister(len(secret_idx)), QuantumRegister(1)
     inv = QuantumRegister(len(secret_intensity))
@@ -168,9 +171,12 @@ def get_key_test():
 
     steganography.get_key(circuit, key_idx, key_result, cover_idx, cover_intensity, secret_idx, secret_intensity, inv, diff1, diff2, sz)
 
+    print(circuit)
+
     backend = Aer.get_backend('statevector_simulator')
     simulation = execute(circuit, backend=backend, shots=1, memory=True)
     simResult = simulation.result()
+
     statevec = simResult.get_statevector(circuit)
     for state in range(len(statevec)):
         if statevec[state] != 0:
@@ -180,9 +186,7 @@ def get_key_test():
 
 
 def main():
-    get_key_test()
-    #print("\n Comparator Test: ", comparator_test(), "\n")
-    #coordinate_comparator_test()
+    neqr_test()
 
 if __name__ == '__main__':
     main()

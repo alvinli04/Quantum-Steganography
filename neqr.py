@@ -41,24 +41,8 @@ return
 ----------------
 A quantum circuit containing the NEQR representation of the image
 '''
-def neqr(bitStr): 
+def neqr(bitStr, quantumImage, idx, intensity): 
     newBitStr = bitStr
-
-    #print(newBitStr)
-    #print("\n")
-
-    # Pixel position
-    idx = QuantumRegister(math.ceil(math.log2(len(newBitStr))))
-
-    # Pixel intensity values
-    intensity = QuantumRegister(8)
-
-    # Classical Register
-    creg = ClassicalRegister(10)
-
-    # Quantum Image Representation as a quantum circuit
-    # with Pixel Position and Intensity registers
-    quantumImage = QuantumCircuit(intensity, idx, creg)
 
     numOfQubits = quantumImage.num_qubits
 
@@ -98,24 +82,4 @@ def neqr(bitStr):
 
         quantumImage.barrier()
 
-    #quantumImage.measure(range(10), range(10))
 
-    #backend = Aer.get_backend('qasm_simulator')
-    #job = execute(quantumImage, backend, shots=1024) # shots default = 1024
-    #result = job.result()
-    #print(result.get_counts()) 
-
-    return (quantumImage, intensity, idx)
-
-if __name__ == '__main__':
-    test_picture_2x2 = [[0, 100], [200, 255]]
-    arr = convert_to_bits(test_picture_2x2)
-    print(arr, "\n")
-    qc_image = neqr(arr)
-
-    # Circuit Analysis 
-    #print('Circuit dimensions')
-    #print('Circuit depth: ', qc_image.decompose().depth())
-    #print('Circuit size: ', qc_image.decompose().size())
-    #print(qc_image.decompose().count_ops())
-    print(qc_image)

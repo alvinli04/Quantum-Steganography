@@ -53,8 +53,6 @@ def comparator(regY, regX, circuit, result):
     circuit.cx(ancilla[2*regLength-2], result[0])
     circuit.cx(ancilla[2*regLength-1], result[1])
 
-    return (circuit, result)
-
 
 '''
 params
@@ -66,11 +64,9 @@ return
 ---------------
 A single qubit |r> which is |1> when YX = AB and |0> otherwise
 '''
-def coordinate_comparator(circuit, YX, AB):
+def coordinate_comparator(circuit, result, YX, AB):
     assert len(YX) == len(AB)
     n = YX.size
-    result = QuantumRegister(1)
-    circuit.add_register(result)
     
     for i in range(n):
         circuit.x(YX[i])
@@ -83,8 +79,6 @@ def coordinate_comparator(circuit, YX, AB):
         circuit.x(YX[i])
         circuit.cx(YX[i], AB[i])
         circuit.x(YX[i])
-    
-    return (circuit, result)
 
 
 '''
@@ -238,38 +232,5 @@ return
 ------------------
 key: the quantum key
 '''
-def get_key(circuit, key_idx, key_result, cover_image_idx, cover_image_intensity, secret_image_idx, secret_image_intensity, invsii, diff1, diff2, image_size):
-    circuit.h(key_idx)
-    _, coord_result1 = coordinate_comparator(circuit, key_idx, cover_image_idx)
-    _, coord_result2 = coordinate_comparator(circuit, key_idx, secret_image_idx)
-    coord_result = QuantumRegister(1)
-    circuit.add_register(coord_result)
-
-    circuit.ccx(coord_result1, coord_result2, coord_result)
-
-    difference(circuit, cover_image_intensity, secret_image_intensity, diff1)
-    difference(circuit, cover_image_intensity, invsii, diff2)
-
-    comp_result = QuantumRegister(2)
-    circuit.add_register(comp_result)
-
-    comparator(diff1, diff2, circuit, comp_result)
-
-    circuit.x(comp_result[1])
-
-    for i in range(image_size):
-        bin_ind = bin(i)[2:]
-        bin_ind = (len(key_idx) - len(bin_ind)) * '0' + bin_ind
-        bin_ind = bin_ind[::-1]
-
-        # X-gate (enabling zero-controlled nature)
-        for j in range(len(bin_ind)):
-            if bin_ind[j] == '0':
-                circuit.x(key_idx[j])
-
-        circuit.mcx(key_idx[:] + coord_result[:] + comp_result[:], key_result)
-
-        # X-gate (enabling zero-controlled nature)
-        for j in range(len(bin_ind)):
-            if bin_ind[j] == '0':
-                circuit.x(key_idx[j])
+def get_key(circuit, key_idx, key_result, cover_idx, cover_intensity, secret_idx, secret_intensity, inv_secret_intensity, diff1, diff2, image_size):
+    
