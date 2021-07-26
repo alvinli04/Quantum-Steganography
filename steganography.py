@@ -348,7 +348,9 @@ def get_key(circuit,
 
     circuit.x(comp_result[1])
 
-def embed():
+def embed(circuit, C, S, Key, cover_image_values, secret_image_values, key_i):
+    # removed code. can be used for unit test
+    '''
     #preperation
     array = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
     print(array)
@@ -358,46 +360,49 @@ def embed():
     #setting up the images, difference registers, and circuiit
     _, cover_image_values = neqr.neqr(bits_array)
     _, secret_image_values = neqr.neqr(bits_array)
-    difference_1 = QuantumRegister(bits_array, "difference_one")
-    difference_2 = QuantumRegister(bits_array, "difference_two")
     circuit = QuantumCircuit(cover_image_values, secret_image_values, difference_1, difference_2)
+    '''
     #part 1:
     #carrying out the coordinate comparators 
-    circuit, r_1 = coordinate_comparator(circuit, C, S)
+    coord_result = QuantumRegister(2, 'coord_result')
+    circuit.add_register(coord_result)
+    coordinate_comparator(circuit, coord_result, C, S)
 
     #getting the key through getKey (once its done)
-    circuit, r_2 = coordinate_comparator(circuit, C, Key)
+    coordinate_comparator(circuit, coord_result, C, Key)
 
     #adding outputs to the circuit 
-    circuit.add_register(r_1)
-    circuit.add_register(r_2)
+    circuit.add_register(coord_result[0])
+    circuit.add_register(coord_result[1])
 
     #part 2: 
     #need to make a controlled difference method :(
-    controlled_difference(result, cover_image_values, secret_image_values, difference_1)
+    diff1_result = QuantumRegister(C.size, 'diff1_result')
+    circuit.add_register(diff1_result)
+    controlled_difference(coord_result[0], circuit, cover_image_values, secret_image_values, diff1_result)
 
     #after this, secret_image_values are inverted 
     invert(circuit, secret_image_values)
     #computing difference again
-    difference(circuit,cover_image_values, secret_image_values, difference_2)
+    diff2_result = QuantumRegister(C.size, 'diff2_result')
+    circuit.add_register(diff2_result)
+    difference(circuit,cover_image_values, secret_image_values, diff2_result)
 
     #comparing the differences
-    _, comparator_result = comparator(circuit, difference_2, difference_1)
-
-    #key (which is one of the outputs)
-    key_i = QuantumRegister(1, 'key_i')
-    circuit.add_register(key_i)
+    comparator_result = QuantumRegister(2, "compare_result")
+    circuit.add_register(comparator_result)
+    comparator(circuit, diff2_result, diff1_result, comparator_result)
 
     # flip for zero-controlled ccnots
     circuit.x(comparator_result[1])
-    circuit.ccx(r_1, comparator_result[1], cover_image_values)
-    circuit.ccx(r_1, comparator_result[1], secret_image_values)
+    circuit.ccx(coord_result[0], comparator_result[1], cover_image_values)
+    circuit.ccx(coord_result[0], comparator_result[1], secret_image_values)
     circuit.x(comparator_result[1]) # flip back
 
     # do a cute little toffoli cascade for the cccswap and cccx
     anc = QuantumRegister(2) # allocate ancilla qubits
     circuit.add_register(anc)
-    circuit.ccx(r_1, r_2, anc[0])
+    circuit.ccx(coord_result[0], coord_result[1], anc[0])
     circuit.ccx(anc[0], comparator_result[1], anc[1])
     circuit.cswap(anc[2], cover_image_values, secret_image_values) # cccswap
-    circuit.cx(comparator_result[1], key_i[0]) # cccnot
+    circuit.cx(comparator_result[1], key_i) # cccnot
