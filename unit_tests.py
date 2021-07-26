@@ -177,21 +177,46 @@ def get_key_test():
     diff1 = QuantumRegister(8)
     diff2 = QuantumRegister(8)
     comp_res = QuantumRegister(2)
+    key_mes = ClassicalRegister(3)
 
-    circuit = QuantumCircuit(cover_intensity, cover_idx, secret_intensity, secret_idx, key_idx, key_result, inv, diff1, diff2, comp_res)
+    circuit = QuantumCircuit(cover_intensity, cover_idx, secret_intensity, secret_idx, key_idx, key_result, inv, diff1, diff2, comp_res, key_mes)
 
     steganography.invert(circuit, secret_intensity, inv)
 
     steganography.get_key(circuit, key_idx, key_result, cover_intensity, secret_intensity, inv, diff1, diff2, comp_res, sz)
 
-    circuit.measure_all()
+    circuit.measure(key_result[:] + key_idx[:], key_mes)
 
-    # Transpile for simulator
-    simulator = Aer.get_backend('aer_simulator')
-    circuit = transpile(circuit, simulator)
-    result = simulator.run(circuit, shots=10, memory=True).result()
-    memory = result.get_memory(circuit)
-    print(memory)
+    provider = IBMQ.load_account()
+    
+    simulator = provider.get_backend('simulator_mps')
+    simulation = execute(circuit, simulator, shots=1024)
+    result = simulation.result()
+    counts = result.get_counts(circuit)
+
+    for(state, count) in counts.items():
+        big_endian_state = state[::-1]
+        print(f"Measured {big_endian_state} {count} times.")
+
+
+def load_test():
+    idx = QuantumRegister(2)
+    odx = QuantumRegister(1)
+    cr = ClassicalRegister(3)
+
+    qc = QuantumCircuit(idx, odx, cr)
+    qc.h(idx)
+    qc.measure(idx[:] + odx[:], cr)
+
+    simulator = Aer.get_backend("aer_simulator")
+    simulation = execute(qc, simulator, shots=1024)
+    result = simulation.result()
+    counts = result.get_counts(qc)
+
+    for(state, count) in counts.items():
+        big_endian_state = state[::-1]
+        print(f"Measured {big_endian_state} {count} times.")
+
 
 def main():
     get_key_test()
