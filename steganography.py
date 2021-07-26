@@ -52,8 +52,6 @@ def comparator(regY, regX, circuit, result):
     circuit.cx(ancilla[2*regLength-2], result[0])
     circuit.cx(ancilla[2*regLength-1], result[1])
 
-    return (circuit, result)
-
 
 '''
 params
@@ -65,10 +63,9 @@ return
 ---------------
 A single qubit |r> which is |1> when YX = AB and |0> otherwise
 '''
-def coordinate_comparator(circuit, YX, AB):
+def coordinate_comparator(circuit, result, YX, AB):
+    assert len(YX) == len(AB)
     n = YX.size
-    result = QuantumRegister(1, 'result')
-    circuit.add_register(result)
     
     for i in range(n):
         circuit.x(YX[i])
@@ -81,8 +78,6 @@ def coordinate_comparator(circuit, YX, AB):
         circuit.x(YX[i])
         circuit.cx(YX[i], AB[i])
         circuit.x(YX[i])
-    
-    return (circuit, result)
 
 
 '''
@@ -97,13 +92,14 @@ return
 A quantum register |D> which holds the positive difference of Y and X.
 '''
 def difference(circuit, Y, X, difference):
+    assert len(Y) == len(X)
     # PART 1: 
     # reversible parallel subtractor
     
     # initialize registers to store sign, difference, and junk qubits
     regLength = X.size
-    sign = QuantumRegister(1, 'sign')
-    ancilla = QuantumRegister(regLength - 1, 'junk')
+    sign = QuantumRegister(1)
+    ancilla = QuantumRegister(regLength - 1)
     circuit.add_register(ancilla)
     circuit.add_register(sign)
 
@@ -287,49 +283,108 @@ def get_secret_image(k, binary_images):
 params
 --------------------
 secret_image: a quantum circuit containing the secret image
+intensity: a quantum register in secret_image that contains the intensity
 
 returns
 --------------------
 nothing
 '''
-def invert(secret_image):
-    for i in range(secret_image.num_qubits):
-        secret_image.x(i)
+def invert(secret_image, intensity, inverse):
+    secret_image.x(intensity)
+    for i in range(len(intensity)):
+        secret_image.cx(intensity[i], inverse[i])
+    secret_image.x(intensity)
 
 
 '''
 params
 ------------------
-cover_image: the quantum cover image
-secret_image: the quantum secret image
-image_size: size of the image
-
-return
-------------------
-key: the quantum key
+circuit: the quantum circuit containing all the images
+key: an empty key register, to be modified
+cover: the quantum cover image
+secret: the quantum secret image
+inv_secret: the inverse secret image
+image_size: total size of the image
+diff1: holds difference between cover and secret
+diff2: holds difference between cover and inverse secret
+image_size: number of pixels
 '''
-def get_key(cover_image, secret_image, image_size):
-    key = QuantumCircuit(image_size)
+def get_key(circuit, 
+            key_idx, 
+            key_result,
+            cover_intensity,  
+            secret_intensity, 
+            inv_secret_intensity, 
+            diff1, 
+            diff2, 
+            comp_result,
+            image_size):
 
+    circuit.h(key_idx)
 
-def embed(circuit, C, S, Key):
-    ### PART ONE
-    
-    _, r_1 = coordinate_comparator(circuit, C, S)
-    _, r_2 = coordinate_comparator(circuit, C, Key)
+    difference(circuit, cover_intensity, secret_intensity, diff1)
+    difference(circuit, cover_intensity, inv_secret_intensity, diff2)
 
-    ### PART FOUR
-    # placeholder code to declare variables so 
-    # vs code won't get all uppity
-    cover_image_values = QuantumRegister(1) # not real size
-    secret_image_values = QuantumRegister(1) # not real size
-    comparator_result = QuantumRegister(2)
-    circuit.add_register(cover_image_values)
-    circuit.add_register(secret_image_values)
-    circuit.add_register(comparator_result)
+    comparator(diff1, diff2, circuit, comp_result)
 
-    # this is part of the actual code now
+    circuit.x(comp_result[1])
 
+    for i in range(image_size):
+        bin_ind = bin(i)[2:]
+        bin_ind = (len(key_idx) - len(bin_ind)) * '0' + bin_ind
+        bin_ind = bin_ind[::-1]
+
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(key_idx[j])
+
+        circuit.mcx(comp_result[:] + key_idx[:], key_result)
+        
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(key_idx[j])
+
+    circuit.x(comp_result[1])
+
+def embed():
+    #preperation
+    array = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
+    print(array)
+    bits_array = neqr.convert_to_bits(array)
+    print(bits_array)
+
+    #setting up the images, difference registers, and circuiit
+    _, cover_image_values = neqr.neqr(bits_array)
+    _, secret_image_values = neqr.neqr(bits_array)
+    difference_1 = QuantumRegister(bits_array, "difference_one")
+    difference_2 = QuantumRegister(bits_array, "difference_two")
+    circuit = QuantumCircuit(cover_image_values, secret_image_values, difference_1, difference_2)
+    #part 1:
+    #carrying out the coordinate comparators 
+    circuit, r_1 = coordinate_comparator(circuit, C, S)
+
+    #getting the key through getKey (once its done)
+    circuit, r_2 = coordinate_comparator(circuit, C, Key)
+
+    #adding outputs to the circuit 
+    circuit.add_register(r_1)
+    circuit.add_register(r_2)
+
+    #part 2: 
+    #need to make a controlled difference method :(
+    controlled_difference(result, cover_image_values, secret_image_values, difference_1)
+
+    #after this, secret_image_values are inverted 
+    invert(circuit, secret_image_values)
+    #computing difference again
+    difference(circuit,cover_image_values, secret_image_values, difference_2)
+
+    #comparing the differences
+    _, comparator_result = comparator(circuit, difference_2, difference_1)
+
+    #key (which is one of the outputs)
     key_i = QuantumRegister(1, 'key_i')
     circuit.add_register(key_i)
 
@@ -346,6 +401,3 @@ def embed(circuit, C, S, Key):
     circuit.ccx(anc[0], comparator_result[1], anc[1])
     circuit.cswap(anc[2], cover_image_values, secret_image_values) # cccswap
     circuit.cx(comparator_result[1], key_i[0]) # cccnot
-
-
-
