@@ -160,40 +160,41 @@ def invert_test():
 def get_key_test():
     test_cover = arraynxn(2)
     test_secret = arraynxn(2)
-    #print(f'cover:\n {test_cover} \n secret:\n {test_secret}')
+    #print(f'cover:\n {test_cover} \nsecret:\n{test_secret}')
     sz = 4
-    (cover, cover_intensity, cover_idx) = neqr.neqr(neqr.convert_to_bits(test_cover))
-    (secret, secret_intensity, secret_idx) = neqr.neqr(neqr.convert_to_bits(test_secret))
 
-    key_idx, key_result = QuantumRegister(len(secret_idx)), QuantumRegister(1)
-    inv = QuantumRegister(len(secret_intensity))
-    diff1 = QuantumRegister(len(secret_intensity))
-    diff2 = QuantumRegister(len(secret_intensity))
+    cover_idx, cover_intensity = QuantumRegister(2), QuantumRegister(8)
+    cover = QuantumCircuit(cover_intensity, cover_idx)
+    secret_idx, secret_intensity = QuantumRegister(2), QuantumRegister(8)
+    secret = QuantumCircuit(secret_intensity, secret_idx)
 
-    print(len(cover_idx), len(secret_idx), len(key_idx))
+    neqr.neqr(neqr.convert_to_bits(test_cover), cover, cover_idx, cover_intensity)
+    neqr.neqr(neqr.convert_to_bits(test_secret), secret, secret_idx, secret_intensity)
 
-    circuit = QuantumCircuit(cover_intensity, cover_idx, secret_intensity, secret_idx, key_idx, key_result, inv, diff1, diff2)
+    key_idx, key_result = QuantumRegister(2), QuantumRegister(1)
+
+    inv = QuantumRegister(8)
+    diff1 = QuantumRegister(8)
+    diff2 = QuantumRegister(8)
+    comp_res = QuantumRegister(2)
+
+    circuit = QuantumCircuit(cover_intensity, cover_idx, secret_intensity, secret_idx, key_idx, key_result, inv, diff1, diff2, comp_res)
 
     steganography.invert(circuit, secret_intensity, inv)
 
-    steganography.get_key(circuit, key_idx, key_result, cover_idx, cover_intensity, secret_idx, secret_intensity, inv, diff1, diff2, sz)
+    steganography.get_key(circuit, key_idx, key_result, cover_intensity, secret_intensity, inv, diff1, diff2, comp_res, sz)
 
-    print(circuit)
+    circuit.measure_all()
 
-    backend = Aer.get_backend('statevector_simulator')
-    simulation = execute(circuit, backend=backend, shots=1, memory=True)
-    simResult = simulation.result()
-
-    statevec = simResult.get_statevector(circuit)
-    for state in range(len(statevec)):
-        if statevec[state] != 0:
-            #note: output is in little endian
-            #only have to look at first bit 
-            print(f"{format(state, '020b')}: {statevec[state].real}")
-
+    # Transpile for simulator
+    simulator = Aer.get_backend('aer_simulator')
+    circuit = transpile(circuit, simulator)
+    result = simulator.run(circuit, shots=10, memory=True).result()
+    memory = result.get_memory(circuit)
+    print(memory)
 
 def main():
-    invert_test()
+    get_key_test()
 
 if __name__ == '__main__':
     main()

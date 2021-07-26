@@ -93,6 +93,7 @@ return
 A quantum register |D> which holds the positive difference of Y and X.
 '''
 def difference(circuit, Y, X, difference):
+    assert len(Y) == len(X)
     # PART 1: 
     # reversible parallel subtractor
     
@@ -224,13 +225,50 @@ def invert(secret_image, intensity, inverse):
 params
 ------------------
 circuit: the quantum circuit containing all the images
-key_idx, key_result: registers of key
-cover_image: the quantum cover image
-secret_image: the quantum secret image
-
-return
-------------------
-key: the quantum key
+key: an empty key register, to be modified
+cover: the quantum cover image
+secret: the quantum secret image
+inv_secret: the inverse secret image
+image_size: total size of the image
+diff1: holds difference between cover and secret
+diff2: holds difference between cover and inverse secret
+image_size: number of pixels
 '''
-def get_key(circuit, key_idx, key_result, cover_idx, cover_intensity, secret_idx, secret_intensity, inv_secret_intensity, diff1, diff2, image_size):
-    pass
+def get_key(circuit, 
+            key_idx, 
+            key_result,
+            cover_intensity,  
+            secret_intensity, 
+            inv_secret_intensity, 
+            diff1, 
+            diff2, 
+            comp_result,
+            image_size):
+
+    circuit.h(key_idx)
+
+    difference(circuit, cover_intensity, secret_intensity, diff1)
+    difference(circuit, cover_intensity, inv_secret_intensity, diff2)
+
+    comparator(diff1, diff2, circuit, comp_result)
+
+    circuit.x(comp_result[1])
+
+    for i in range(image_size):
+        bin_ind = bin(i)[2:]
+        bin_ind = (len(key_idx) - len(bin_ind)) * '0' + bin_ind
+        bin_ind = bin_ind[::-1]
+
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(key_idx[j])
+
+        circuit.mcx(comp_result[:] + key_idx[:], key_result)
+        
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(key_idx[j])
+
+    circuit.x(comp_result[1])
