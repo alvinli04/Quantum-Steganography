@@ -272,3 +272,57 @@ def get_key(circuit,
                 circuit.x(key_idx[j])
 
     circuit.x(comp_result[1])
+
+def embed():
+    #preperation
+    array = [[random.randint(0, 255), random.randint(0, 255)], [random.randint(0, 255), random.randint(0, 255)]]
+    print(array)
+    bits_arr = neqr.convert_to_bits(array)
+    print(bits_arr)
+
+    #setting up the images, difference registers, and circuiit
+    _, cover_image_values = neqr.neqr(bits_array)
+    _, secret_image_values = neqr.neqr(bits_array)
+    difference_1 = QuantumRegister(bits_array, "difference_one")
+    difference_2 = QuantumRegister(bits_array, "difference_two")
+    circuit = QuantumCircuit(cover_image_values, secret_image_values, difference_1, difference_2)
+    #part 1:
+    #carrying out the coordinate comparators 
+    circuit, r_1 = coordinate_comparator(circuit, C, S)
+
+    #getting the key through getKey (once its done)
+    circuit, r_2 = coordinate_comparator(circuit, C, Key)
+
+    #adding outputs to the circuit 
+    circuit.add_register(r_1)
+    circuit.add_register(r_2)
+
+    #part 2: 
+    #need to make a controlled difference method :(
+    controlled_difference(result, cover_image_values, secret_image_values, difference_1)
+
+    #after this, secret_image_values are inverted 
+    invert(circuit, secret_image_values)
+    #computing difference again
+    difference(circuit,cover_image_values, secret_image_values, difference_2)
+
+    #comparing the differences
+    _, comparator_result = comparator(circuit, difference_2, difference_1)
+
+    #key (which is one of the outputs)
+    key_i = QuantumRegister(1, 'key_i')
+    circuit.add_register(key_i)
+
+    # flip for zero-controlled ccnots
+    circuit.x(comparator_result[1])
+    circuit.ccx(r_1, comparator_result[1], cover_image_values)
+    circuit.ccx(r_1, comparator_result[1], secret_image_values)
+    circuit.x(comparator_result[1]) # flip back
+
+    # do a cute little toffoli cascade for the cccswap and cccx
+    circuit.x(comparator_result[1])
+    circuit.ccx(r_1, r_2, comparator_result[1])
+    circuit.cswap(comparator_result[1], cover_image_values, secret_image_values) # cccswap
+    circuit.cx(comparator_result[1], key_i[0]) # cccnot
+    circuit.ccx(r_1, r_2, comparator_result[1])
+    circuit.x(comparator_result[1])
