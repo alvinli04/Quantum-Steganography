@@ -160,7 +160,7 @@ def invert_test():
 def get_key_test():
     test_cover = arraynxn(2)
     test_secret = arraynxn(2)
-    #print(f'cover:\n {test_cover} \nsecret:\n{test_secret}')
+    print(f'cover:\n {test_cover} \nsecret:\n{test_secret}')
     sz = 4
 
     cover_idx, cover_intensity = QuantumRegister(2), QuantumRegister(8)
