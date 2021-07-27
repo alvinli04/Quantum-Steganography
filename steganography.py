@@ -406,3 +406,28 @@ def embed(circuit, C, S, Key, cover_image_values, secret_image_values, key_i):
     circuit.ccx(anc[0], comparator_result[1], anc[1])
     circuit.cswap(anc[2], cover_image_values, secret_image_values) # cccswap
     circuit.cx(comparator_result[1], key_i) # cccnot
+
+
+def extract(circuit, key_idx, key_val, cs_idx, cs_val, extracted, comp_result, k):
+    for i in range(k):
+        circuit.cx(cs_val[len(cs_val) - k - 1 + i], extracted[i])
+
+    coordinate_comparator(circuit, comp_result, key_idx, cs_idx)
+
+    for i in range(image_size):
+        bin_ind = bin(i)[2:]
+        bin_ind = (len(key_idx) - len(bin_ind)) * '0' + bin_ind
+        bin_ind = bin_ind[::-1]
+
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(cs_idx[j])
+
+        circuit.mcx(comp_result[:] + cs_idx[:], extracted)
+        
+        # X-gate (enabling zero-controlled nature)
+        for j in range(len(bin_ind)):
+            if bin_ind[j] == '0':
+                circuit.x(cs_idx[j])
+
